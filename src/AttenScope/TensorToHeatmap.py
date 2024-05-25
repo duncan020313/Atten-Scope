@@ -1,21 +1,9 @@
 import numpy as np
 import random
-import math
+from typing import Iterable
 
 
-def value_to_color(value, min_val, max_val, hue, dim=False):
-    if value == float("-inf"):
-        return "hsl(0, 0%, 25%)"  # Dark grey for -inf
-    # Normalize the value to be between 0 and 1
-    normalized_value = (value - min_val) / (max_val - min_val)
-    # Calculate lightness based on normalized value
-    lightness = 100 - int(normalized_value * 75)  # lightness from 25% to 100%
-    if dim:
-        lightness = min(50, lightness)  # Dim the brightness for non-highlighted rows
-    return f"hsl({hue}, 100%, {lightness}%)"
-
-
-def generate_heatmap_html(matrices, labels, tokens):
+def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
     rows, cols = matrices[0].shape
     hues = [random.randint(0, 360) for _ in matrices]  # Random hue for each matrix
     min_vals = [np.min(matrix[np.isfinite(matrix)]) for matrix in matrices]
@@ -173,9 +161,6 @@ def generate_heatmap_html(matrices, labels, tokens):
     resizeCanvas();
 
     function valueToColor(value, minVal, maxVal, hue, dim = false) {{
-        if (value === -Infinity) {{
-            return 'hsl(0, 0%, 25%)';  // Dark grey for -inf
-        }}
         const normalizedValue = (value - minVal) / (maxVal - minVal);
         const lightness = 100 - Math.floor(normalizedValue * 75);  // lightness from 25% to 100%
         if (dim) {{
@@ -300,10 +285,12 @@ def generate_heatmap_html(matrices, labels, tokens):
         const hue = hues[matrixIndex];
         const previewRows = previewCanvas.height;
         const previewCols = previewCanvas.width;
-        const cellHeight = previewCanvas.height / data.length;
-        const cellWidth = previewCanvas.width / data[0].length;
-        for (let i = 0; i < data.length; i++) {{
-            for (let j = 0; j < data[0].length; j++) {{
+        const cellHeight = Math.max(previewCanvas.height / data.length, 2);
+        const cellWidth = Math.max(previewCanvas.width / data[0].length, 2);
+        const maxIndex = Math.min(previewRows / cellWidth, data.length);
+        console.log(cellWidth, cellHeight, maxIndex)
+        for (let i = 0; i < maxIndex; i++) {{
+            for (let j = 0; j < maxIndex; j++) {{
                 previewCtx.fillStyle = valueToColor(data[i][j], minVal, maxVal, hue);
                 previewCtx.fillRect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
             }}
@@ -327,4 +314,4 @@ def generate_heatmap_html(matrices, labels, tokens):
 </body>
 </html>
     """
-    return html_content.replace("-inf", "-Infinity")
+    return html_content

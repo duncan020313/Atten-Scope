@@ -43,6 +43,13 @@ def get_effective_attention(
 ) -> Tensor:
     """
     Compute the effective attention for a given layer and head.
+
+    Args:
+        attn (Tensor): The attention tensor of shape (num_heads, seq_length, seq_length).
+        value (Tensor): The value tensor of shape (num_heads, seq_length, hidden_size).
+
+    Returns:
+        Tensor: The effective attention tensor of shape (num_heads, seq_length, seq_length).
     """
     null_projector_value = get_nullspace_projection_matrix(value)
     if null_projector_value is None:
@@ -62,6 +69,8 @@ def apply_value_norm_to_attention(
     attn: = tok_len x tok_len
     value: = tok_len x dim
     """
+    assert attn.size(0) == attn.size(1)
+    assert attn.size(0) == value.size(0)
     norm_value = t.norm(value, dim=1)  # tok_len
     norm_applied_attn = attn * norm_value.unsqueeze(0)
     normalized_attn = norm_applied_attn / t.sum(norm_applied_attn, dim=1).unsqueeze(1)
