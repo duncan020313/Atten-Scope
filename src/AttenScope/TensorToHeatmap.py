@@ -23,7 +23,7 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
             (
                 f'<span class="token" id="token{i}" onmouseover="highlightRowOrColumnAndToken({i})" onclick="toggleFixRowOrColumn({i})">\\n</span><br>'
                 if token == "\n"
-                else f'<span class="token" id="token{i}" onmouseover="highlightRowOrColumnAndToken({i})" onclick="toggleFixRowOrColumn({i})">{token}</span>'
+                else f'<span class="token" id="token{i}" onmouseover="highlightRowOrColumnAndToken({i})" onclick="toggleFixRowOrColumn({i})">{token.replace(" ", "&nbsp;").replace("<", "&lt;").replace(">", "&gt;")}</span>'
             )
             for i, token in enumerate(tokens)
         ]
@@ -74,6 +74,7 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
             display: inline-block;
             cursor: pointer;
             margin: 2px 0;
+            padding: 2px 5px;
         }}
         .token:hover {{
             text-decoration: underline;
@@ -99,7 +100,6 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
             flex-direction: column;
             justify-content: top;
             align-items: center;
-            width: 25vw;
             height: 75vh;
             overflow-y: auto;
         }}
