@@ -1,0 +1,10 @@
+cff-version: 0.1
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Lee"
+  given-names: "Dongjae"
+  orcid: https://orcid.org/0009-0001-0073-5184
+title: "Atten-Scope"
+version: 0.1
+date-released: 2024-05-26
+url: "https://github.com/duncan020313/Atten-Scope"
