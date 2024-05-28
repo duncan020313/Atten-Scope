@@ -86,6 +86,7 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
         }}
         .canvas-wrapper {{
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             width: min(75vw, 75vh);
@@ -117,6 +118,17 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
             background-color: #00f;
             color: #fff;
         }}
+        .legend {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }}
+
+        .legend canvas {{
+            border: 1px solid black;
+        }}
+
     </style>
 </head>
 <body>
@@ -126,6 +138,9 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
 <div class="viewer">
     <div class="canvas-wrapper">
         <canvas id="heatmapCanvas"></canvas>
+        <div class="legend">
+            <canvas id="legendCanvas" width="200" height="20"></canvas>
+        </div>
     </div>
     <div class="token-viewer">
         <div class="mode-buttons">
@@ -149,6 +164,8 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
     let fixedMatrixIndex = null;
     let currentMatrixIndex = 0;
     let currentMode = 'row'; // Default mode
+    const legendCanvas = document.getElementById('legendCanvas');
+    const legendCtx = legendCanvas.getContext('2d');
 
     function resizeCanvas() {{
         const canvasWrapper = document.querySelector('.canvas-wrapper');
@@ -212,6 +229,33 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
                 tokenElem.style.backgroundColor = valueToColor(rowOrColumn[i], minVal, maxVal, hue);
             }}
         }}
+        updateLegend();
+    }}
+    
+    function drawLegend(minVal, maxVal, hue) {{
+        const gradient = legendCtx.createLinearGradient(0, 0, legendCanvas.width, 0);
+        for (let i = 0; i <= 100; i++) {{
+            const value = minVal + (i / 100) * (maxVal - minVal);
+            const color = valueToColor(value, minVal, maxVal, hue);
+            gradient.addColorStop(i / 100, color);
+        }}
+
+        legendCtx.fillStyle = gradient;
+        legendCtx.fillRect(0, 0, legendCanvas.width, legendCanvas.height);
+
+        // Add text labels for min and max values
+        legendCtx.fillStyle = 'black';
+        legendCtx.font = '14px Arial';
+        legendCtx.fontWeight = 'bold';
+        legendCtx.fillText(minVal.toFixed(2), 0, legendCanvas.height - 3);
+        legendCtx.fillText(maxVal.toFixed(2), legendCanvas.width - 30, legendCanvas.height - 3);
+    }}
+
+    function updateLegend() {{
+        const minVal = minVals[currentMatrixIndex];
+        const maxVal = maxVals[currentMatrixIndex];
+        const hue = hues[currentMatrixIndex];
+        drawLegend(minVal, maxVal, hue);
     }}
 
     function toggleFixMatrix(matrixIndex) {{
@@ -301,6 +345,9 @@ def generate_heatmap_html(matrices: Iterable[np.ndarray], labels, tokens):
         currentMode = mode;
         document.getElementById('rowMode').classList.toggle('active', mode === 'row');
         document.getElementById('columnMode').classList.toggle('active', mode === 'column');
+        // Redraw the matrix to update the neon effect
+        drawMatrix(currentMatrixIndex);
+        updateLegend();
     }}
 
     // Draw previews
